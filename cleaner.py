@@ -35,7 +35,7 @@ for allurl in data:
 			z=r""+singleurl+"="+payload
 		print r""+z
 
-		response = requests.get(z, verify=True)
+		response = requests.get(z, verify=False) # SSL verification set to False bcz script won't work if SSL certification verification fails. 
 		
 		try:
 			if response.history:
