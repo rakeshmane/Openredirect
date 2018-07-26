@@ -2,8 +2,22 @@ import json
 import requests,sys,time,os
 import urllib2,urllib
 import urlparse
+import warnings
+from colorama import Fore, Back, Style
 
-f=open('rakeshmane.com_ServerScripts_Links.json')
+
+
+if len(sys.argv)<=2:
+	print "Usage : python Open_Redirect_Scanner.py URLsListFile ProjectName"
+	exit()
+
+
+warnings.filterwarnings("ignore") # To hide the Warning Messages
+
+f=open(sys.argv[1])
+project_name=sys.argv[2]
+
+
 
 with open('payload', 'r') as p:
     payloadsfromfile = p.readlines()
@@ -11,31 +25,34 @@ with open('payload', 'r') as p:
 data = json.load(f)
 f.close()
 urlwithparameter=[]
-def fetch(z):
-	print z
-	response = requests.get(z, verify=False) # SSL verification set to False bcz script won't work if SSL certification verification fails. 		
+
+def writeToFile(file_name,content): # Write result to file
+	f_name=file_name+"_"+project_name+".txt"
+	if os.path.exists(f_name):
+		open(f_name,"a").write(content+"\n") # Append
+	else:
+		open(f_name,"w").write(content+"\n") # Write
+
+def fetch(z,payload):
 	try:
-		if response.history:
-	                print "Request was redirected"
-	                for resp in response.history:
-	                    print "|"
-	                    print resp.status_code, resp.url
-	                    
-	                print "Final destination:"
-	                print "+"+"\x1b[6;30;42m"
-	                print response.status_code, response.url
-			print "\x1b[0m"
-	      	else:
-	                print "Request was not redirected"		         
-  	except:
-		print "connection error :("
+		response = requests.get(z, allow_redirects=False, verify=False) # SSL verification set to False bcz script won't work if SSL certification verification fails. 		
+	except:
+		print "Connection Issues"
+
+	if "location" in response.headers: #Check location header in response
+		if response.headers['location'].strip() == payload.strip():
+			print Fore.BLUE+"Confirmed : "+Fore.RED+response.url+" : "+Fore.BLUE+response.headers['location'].strip()+Style.RESET_ALL
+			writeToFile("confirmed",response.url+" : "+response.headers['location'].strip()) #  http://site?x=/\google.com : /\google.com [URL:Location_Header_Value]
+		else:
+			print Fore.BLUE+"Possible : "+Style.RESET_ALL+response.url+" : "+Fore.BLUE+response.headers['location'].strip()+Style.RESET_ALL
+			writeToFile("possible",response.url+" : "+response.headers['location'].strip()) #  http://site?x=/\google.com : /\google.com [URL:Location_Header_Value]
 
 
 global tmp,counter,why,why1
 counter=0
 
 tmp=""
-## New code bigins 
+## New code begins 
 urllist=[]
 for allurl in data:
 	url=data[allurl]
@@ -67,7 +84,7 @@ for allurl in data:
 				tmp=tmp	+tmp1
 				finalurl= allurl+"?"+tmp
 				for payload in payloadsfromfile:
-					fetch(finalurl+payload)
+					fetch(finalurl+payload,payload)
 				
 
 
@@ -79,7 +96,7 @@ for allurl in data:
 			z=singleurl+"/"+payload
 		else:
 			z=singleurl+"="+payload
-		fetch(z)
+		fetch(z,payload)
 
 
 
