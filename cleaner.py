@@ -3,7 +3,6 @@ import requests,sys,time,os
 import urllib2,urllib
 import urlparse
 import warnings
-from colorama import init
 from colorama import Fore, Back, Style
 
 
