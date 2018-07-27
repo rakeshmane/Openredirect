@@ -39,11 +39,13 @@ def fetch(z,payload):
 	except:
 		print "Connection Issues"
 
+		#Add logic of "Refresh" header 
 	if "location" in response.headers: #Check location header in response
 		if response.headers['location'].strip() == payload.strip():
 			print Fore.BLUE+"Confirmed : "+Fore.RED+response.url+" : "+Fore.BLUE+response.headers['location'].strip()+Style.RESET_ALL
 			writeToFile("confirmed",response.url+" : "+response.headers['location'].strip()) #  http://site?x=/\google.com : /\google.com [URL:Location_Header_Value]
-		else:
+		elif payload.strip() in response.headers['location'].strip():
+			print payload.strip()+":"+response.headers['location'].strip()
 			print Fore.BLUE+"Possible : "+Style.RESET_ALL+response.url+" : "+Fore.BLUE+response.headers['location'].strip()+Style.RESET_ALL
 			writeToFile("possible",response.url+" : "+response.headers['location'].strip()) #  http://site?x=/\google.com : /\google.com [URL:Location_Header_Value]
 
